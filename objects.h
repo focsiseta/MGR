@@ -86,10 +86,10 @@ private:
         for (std::shared_ptr<hittable> object : objects) {
             if (object->hit(r,deltaT,tempRecord)) {
                 hitAnything = true;
-                if (closestSoFar < tempRecord.t) {
+                if (tempRecord.t <= closestSoFar) {
                     closestSoFar = tempRecord.t;
+                    record = tempRecord;
                 }
-                record = tempRecord;
             }
         }
         return hitAnything;

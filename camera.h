@@ -116,6 +116,14 @@ public:
                     pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
 
                 }
+                if (ev.key.keysym.sym == SDLK_w) {
+                    cameraPosition -= vec3(0,0,0.1);
+                    viewDirection = cameraPosition - vec3(0,0,focalLength);
+                    //std::clog << cameraPosition << std::endl;
+                    upperLeftCorner = viewDirection - viewPortU*0.5 - viewPortV*0.5;
+                    pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
+
+                }
                 if (ev.key.keysym.sym == SDLK_d) {
                     yaw -= 0.09;
                     viewDirection = vec3(viewDirection.x() * cos(yaw) + viewDirection.z() * sin(yaw),viewDirection.y(),viewDirection.x() * -sin(yaw) + viewDirection.z() * cos(yaw));

@@ -76,7 +76,18 @@ class dielectric : public material {
     }
 
     bool scatter(const ray &r, const hitRecord &rec, color &attenuation, ray &scattered) const override {
-        vec3 scatterDirection = refract(r,rec,INDEX_AIR / refractIndex);
+        double etaRatio = refractIndex/INDEX_WATER;
+        etaRatio = rec.frontFace ? etaRatio : 1.0/etaRatio;
+        vec3 unitDirection = unit_vector(r.direction);
+        double cosEta  = dot(-unitDirection,rec.normal);
+        double sinEta = sqrt(1.0 - cosEta*cosEta);
+        bool isReflect = etaRatio * sinEta > 1.0;
+        vec3 scatterDirection;
+        if (isReflect) {
+            scatterDirection = reflect(unitDirection, rec.normal);
+        }else {
+            scatterDirection = refract(unitDirection,rec.normal,etaRatio);
+        }
         scattered = ray{rec.hitPosition, scatterDirection};
         attenuation = albedo;
         return true;
