@@ -6,7 +6,7 @@ Framerate it's not even bad, it's straight up trash so improving that is surelly
 ## Requirements
 The project requires that you have SDL2 installed on your machine. SDL2 it's usually available from your package manager as something like libsdl2-dev
 ## How to compile
-Just cd into the repository after downloading it and lanuch g++ main.cpp -I/usr/local/include/SDL2 -L/usr/local/lib -lSDL2 -o raytracer
+Download the repo and cd into it, launch g++ main.cpp -I/usr/local/include/SDL2 -L/usr/local/lib -lSDL2 -o raytracer
 
 ![image](https://github.com/user-attachments/assets/ee0789ac-ef00-480f-b74e-7fa80691b248)
 
