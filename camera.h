@@ -133,7 +133,7 @@ public:
                     ray r{cameraPosition,direction};
                     interval delta{0.001,infinity};
                     hitRecord rec;
-                    color c = realTimeRayColor(r,world,2);
+                    color c = realTimeRayColor(r,world,3);
 
 
 
@@ -163,7 +163,7 @@ public:
             ray r = rayAround(i,j);
             c += realTimeRayColor(r,world,25);
         }
-        //linear averege
+        //linear average
         return c/raySamples;
     }
     int getImageWidth() const {return imageWidth;};

@@ -15,7 +15,10 @@ vec3 refract(const ray &r,const hitRecord& rec,double etaRatio) {
     if (etaRatio == 0) return reflect(r,rec);
     etaRatio = rec.frontFace ? etaRatio : 1.0/etaRatio;
     vec3 unitDirection = unit_vector(r.direction);
-    vec3 perp = etaRatio * (unitDirection + dot(-unitDirection, rec.normal)*rec.normal);
+    double cosEta  = dot(-unitDirection,rec.normal);
+    double sinEta = sqrt(1.0 - cosEta*cosEta);
+    if (sinEta * etaRatio > 1) return reflect(r,rec);
+    vec3 perp = etaRatio * (-unitDirection + dot(-unitDirection, rec.normal)*rec.normal);
     vec3 par = - sqrt(1 - perp.length_squared()) * rec.normal;
     return perp + par;
 
