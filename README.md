@@ -8,7 +8,10 @@ The project requires that you have SDL2 installed on your machine. SDL2 it's usu
 ## How to compile
 Download the repo and cd into it, launch g++ main.cpp -I/usr/local/include/SDL2 -L/usr/local/lib -lSDL2 -o raytracer
 
-![image(1)](https://github.com/user-attachments/assets/554ebb56-e964-41c0-97e7-3d51d94ebb8c)
+![image(2)](https://github.com/user-attachments/assets/346249de-21ad-4230-b056-bce3d6769822)
+
+
+
 
 To output the image you just ./raytracer >> image.ppm, and if you've compiled with the last the lines of code uncommented in main.cpp, then the last frame is the one that's going to be rendered. For obvious reasons the generated image will be way better than the realtime feed
 
