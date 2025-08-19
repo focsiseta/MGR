@@ -76,14 +76,17 @@ class dielectric : public material {
     }
 
     bool scatter(const ray &r, const hitRecord &rec, color &attenuation, ray &scattered) const override {
-        double etaRatio = INDEX_AIR/refractIndex;
-        etaRatio = rec.frontFace ? etaRatio : 1.0/etaRatio;
+        double etaRatio = refractIndex;
+        etaRatio = rec.frontFace ? 1.0/etaRatio : refractIndex;
         vec3 unitDirection = unit_vector(r.direction);
-        double cosEta  = dot(-unitDirection,rec.normal);
+        double cosEta  =std::fmin( dot(-unitDirection,rec.normal),1.0);
         double sinEta = sqrt(1.0 - cosEta*cosEta);
         bool isReflect = etaRatio * sinEta > 1.0;
         vec3 scatterDirection;
-        if (isReflect) {
+        //|| reflectance(cosEta,etaRatio) > random_double()
+        auto reflct = reflectance(cosEta,etaRatio);
+        auto rrr = random_double();
+        if (isReflect ||  reflct > rrr) {
             scatterDirection = reflect(unitDirection, rec.normal);
         }else {
             scatterDirection = refract(unitDirection,rec.normal,etaRatio);

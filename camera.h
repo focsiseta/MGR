@@ -13,28 +13,44 @@
 
 class camera {
 public:
-    vec3 cameraPosition; //cameraCenter
-    vec3 viewDirection;
+
+    double vfov = 20;
+
     double yaw = 0.0;
     int raySamples = 25;
-    camera(vec3 center,int width,int height,double fLength,double viewPortH) {
+    camera(int width,int height,vec3 lookFrom, vec3 lookAt, double viewPortH) {
         aspectRatio = double(width)/ double(height);
-        cameraPosition = center;
         imageWidth = width;
         imageHeight = imageWidth / aspectRatio;
         imageHeight = imageHeight <= 0 ? 1 : imageHeight;
         std::clog <<"Image resolution: "<< imageWidth << "x" << imageHeight << std::endl;
-        focalLength = fLength;
-        viewPortHeight = viewPortH;
-        viewPortWidth = viewPortHeight * aspectRatio;
-        viewPortU = vec3(viewPortWidth,0.0,0.0);
-        viewPortV = vec3(0.0,-viewPortHeight,0.0);
-        deltaU = viewPortU / imageWidth;
-        deltaV = viewPortV / imageHeight;
-        viewDirection = cameraPosition - vec3(0,0,focalLength);
-        upperLeftCorner = viewDirection - viewPortU*0.5 - viewPortV*0.5;
-        pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
+        update(lookFrom,lookAt,viewPortH);
+
     }
+    void update(vec3 from, vec3 at, double viewPortH) {
+
+            lookFrom = from;
+            lookAt   = at;
+            viewDirection = lookAt - lookFrom;
+            focalLength = viewDirection.length();
+            auto theta = degrees_to_radians(vfov);
+            auto h = tan(theta/2);
+            w = unit_vector(viewDirection);
+            u = unit_vector(cross(w,vec3(0,1,0))); //virtual up
+            v = unit_vector(cross(u,w));
+            //in case there is the need to change fov on the fly
+            viewPortHeight = viewPortH * h * focalLength;
+            viewPortWidth = viewPortHeight * aspectRatio;
+            viewPortU = u * viewPortWidth;
+            viewPortV = -v * viewPortHeight;
+            deltaU = viewPortU / imageWidth;
+            deltaV = viewPortV / imageHeight;
+
+            upperLeftCorner =  lookFrom + (focalLength * w) - viewPortU*0.5 - viewPortV*0.5;
+            pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
+            std::clog << "pixel00Loc: " << pixel00Loc << std::endl;
+    }
+
 
 
     color rayColor(ray& r, hittable& hittable, int bounces) {
@@ -70,11 +86,11 @@ public:
         for (int i = 0; i < imageHeight; i++) {
             for (int j = 0; j < imageWidth; j++) {
                 vec3 pixelLocation = pixel00Loc + deltaU*double(j) + deltaV * double(i);
-                vec3 direction = pixelLocation - cameraPosition;
+                vec3 direction = pixelLocation - lookFrom;
                 double tt = (unit_vector(direction).y() + 1.0) * 0.5;
                 // color c1 = color{0.5, 0.7, 1.0};
                 // color c2 = color{1.0,1.0,1.0};
-                ray r{cameraPosition,direction};
+                ray r{lookFrom,direction};
                 color main = supersampling(i,j,world);
                 //color c = tt * c1 + (1 - tt) * c2;
                 result.setPixel(j,i,main);
@@ -109,39 +125,33 @@ public:
                 if (ev.type == SDL_QUIT)
                     keepRunning = false;
                 if (ev.key.keysym.sym == SDLK_s) {
-                    cameraPosition += vec3(0,0,0.1);
-                    viewDirection = cameraPosition - vec3(0,0,focalLength);
-                    //std::clog << cameraPosition << std::endl;
-                    upperLeftCorner = viewDirection - viewPortU*0.5 - viewPortV*0.5;
-                    pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
+                    update(lookFrom - w * 0.1,lookAt - w * 0.1,2);
 
                 }
                 if (ev.key.keysym.sym == SDLK_w) {
-                    cameraPosition -= vec3(0,0,0.1);
-                    viewDirection = cameraPosition - vec3(0,0,focalLength);
-                    //std::clog << cameraPosition << std::endl;
-                    upperLeftCorner = viewDirection - viewPortU*0.5 - viewPortV*0.5;
-                    pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
+                    update(lookFrom + w * 0.1,lookAt + w * 0.1,2);
 
                 }
                 if (ev.key.keysym.sym == SDLK_d) {
-                    yaw -= 0.09;
-                    viewDirection = vec3(viewDirection.x() * cos(yaw) + viewDirection.z() * sin(yaw),viewDirection.y(),viewDirection.x() * -sin(yaw) + viewDirection.z() * cos(yaw));
-                    upperLeftCorner =  viewDirection - viewPortU*0.5 - viewPortV*0.5;
-                    pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
+                    yaw = 0.09;
+                    update(lookFrom +vec3(sin(-yaw),0.0,cos(-yaw)),lookAt,2);
+                }
+                if (ev.key.keysym.sym == SDLK_a) {
+                    yaw = 0.09;
+                    update(lookFrom +vec3(sin(yaw),0.0,cos(yaw)),lookAt,2);
                 }
             }
             for (int i = 0; i < imageHeight; i++) {
                 for (int j = 0; j < imageWidth; j++) {
                     vec3 pixelLocation = pixel00Loc + deltaU*double(j) + deltaV * double(i);
-                    vec3 direction = pixelLocation - cameraPosition;
+                    vec3 direction = pixelLocation - lookFrom;
                     double tt = (unit_vector(direction).y() + 1.0) * 0.5;
                     // color c1 = color{0.5, 0.7, 1.0};
                     // color c2 = color{1.0,1.0,1.0};
-                    ray r{cameraPosition,direction};
+                    ray r{lookFrom,direction};
                     interval delta{0.001,infinity};
                     hitRecord rec;
-                    color c = realTimeRayColor(r,world,3);
+                    color c = realTimeRayColor(r,world,5);
 
 
 
@@ -161,15 +171,15 @@ public:
         vec3 square = sample_square();
         //vec3 randomSubPixel = pixel00Loc + square + deltaU * (double(j) + 0.5) + deltaV * (double(i) + 0.5);
         vec3 randomSubPixel = pixel00Loc + (j + square.x()) * deltaU + (i + square.y()) * deltaV;
-        vec3 direction = randomSubPixel - cameraPosition;
-        ray r{cameraPosition,direction};
+        vec3 direction = randomSubPixel - lookFrom;
+        ray r{lookFrom,direction};
         return r;
     }
     color supersampling(int i, int j,hittable& world) {
         color c{};
         for (int s = 0; s < raySamples; s++) {
             ray r = rayAround(i,j);
-            c += realTimeRayColor(r,world,25);
+            c += realTimeRayColor(r,world,100);
         }
         //linear average
         return c/raySamples;
@@ -188,6 +198,14 @@ private:
     vec3 deltaV;
     vec3 upperLeftCorner;
     vec3 pixel00Loc;
+
+    vec3 lookFrom;
+    vec3 lookAt;
+    vec3 viewDirection;
+
+    vec3 u;
+    vec3 v;
+    vec3 w;
 
 
 };

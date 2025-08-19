@@ -64,6 +64,11 @@ vec3 vectorInsideEmisphere(vec3& normal) {
         return -v;
     }
 }
+static double reflectance(double cosine, double refractionIndex) {
+    auto r0 = (1 - refractionIndex) / (1 + refractionIndex);
+    r0 = r0*r0;
+    return r0 + (1-r0)*std::pow((1 - cosine),5);
+}
 
 
 // Common Headers
