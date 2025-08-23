@@ -6,12 +6,18 @@
 #include "vec3.h"
 
 #include <iostream>
+#include <SDL2/SDL.h>
 
 #include "interval.h"
 
 using color = vec3;
 
 
+double clamp(double val, double min, double max) {
+    if (val < min) return min;
+    if (val > max) return max;
+    return val;
+}
 double linear_to_gamma(double linear){
     if (linear > 0.0) return std::sqrt(linear);
     return 0.0;

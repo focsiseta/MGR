@@ -17,7 +17,7 @@ public:
     double vfov = 20;
 
     double yaw = 0.0;
-    int raySamples = 25;
+    int raySamples = 50;
     camera(int width,int height,vec3 lookFrom, vec3 lookAt, double viewPortH) {
         aspectRatio = double(width)/ double(height);
         imageWidth = width;
@@ -32,23 +32,31 @@ public:
             lookFrom = from;
             lookAt   = at;
             viewDirection = lookAt - lookFrom;
-            focalLength = viewDirection.length();
+
             auto theta = degrees_to_radians(vfov);
             auto h = tan(theta/2);
             w = unit_vector(viewDirection);
             u = unit_vector(cross(w,vec3(0,1,0))); //virtual up
             v = unit_vector(cross(u,w));
             //in case there is the need to change fov on the fly
-            viewPortHeight = viewPortH * h * focalLength;
+            viewPortHeight = viewPortH * h * focusDistance;
             viewPortWidth = viewPortHeight * aspectRatio;
             viewPortU = u * viewPortWidth;
             viewPortV = -v * viewPortHeight;
             deltaU = viewPortU / imageWidth;
             deltaV = viewPortV / imageHeight;
 
-            upperLeftCorner =  lookFrom + (focalLength * w) - viewPortU*0.5 - viewPortV*0.5;
+            upperLeftCorner =  lookFrom + (focusDistance * w) - viewPortU*0.5 - viewPortV*0.5;
             pixel00Loc  =  upperLeftCorner + 0.5*vec3(deltaU + deltaV);
             std::clog << "pixel00Loc: " << pixel00Loc << std::endl;
+            auto defocusRadius = focusDistance * std::tan(degrees_to_radians(defocusAngle/2));
+            defocusDiskU = u * defocusRadius;
+            defocusDiskV = v * defocusRadius;
+
+
+
+
+
     }
 
 
@@ -90,8 +98,9 @@ public:
                 double tt = (unit_vector(direction).y() + 1.0) * 0.5;
                 // color c1 = color{0.5, 0.7, 1.0};
                 // color c2 = color{1.0,1.0,1.0};
-                ray r{lookFrom,direction};
+
                 color main = supersampling(i,j,world);
+
                 //color c = tt * c1 + (1 - tt) * c2;
                 result.setPixel(j,i,main);
 
@@ -112,7 +121,7 @@ public:
             }
         }
         //background ray color
-        return vec3{1,1,1};
+        return vec3{.9,.9,.9};
 
     }
     void renderSDL(hittable& world) {
@@ -129,7 +138,11 @@ public:
 
                 }
                 if (ev.key.keysym.sym == SDLK_w) {
-                    update(lookFrom + w * 0.1,lookAt + w * 0.1,2);
+                    defocusAngle += 0.1;
+                    std::clog << defocusAngle << std::endl;
+
+                    update(lookFrom,lookAt,2);
+
 
                 }
                 if (ev.key.keysym.sym == SDLK_d) {
@@ -143,12 +156,14 @@ public:
             }
             for (int i = 0; i < imageHeight; i++) {
                 for (int j = 0; j < imageWidth; j++) {
-                    vec3 pixelLocation = pixel00Loc + deltaU*double(j) + deltaV * double(i);
-                    vec3 direction = pixelLocation - lookFrom;
-                    double tt = (unit_vector(direction).y() + 1.0) * 0.5;
-                    // color c1 = color{0.5, 0.7, 1.0};
-                    // color c2 = color{1.0,1.0,1.0};
-                    ray r{lookFrom,direction};
+                     vec3 pixelLocation = pixel00Loc + deltaU*double(j) + deltaV * double(i);
+                     vec3 from = (defocusAngle <= 0 ? lookFrom : defocusDiskSample());
+                     vec3 direction = pixelLocation - from;
+                     double tt = (unit_vector(direction).y() + 1.0) * 0.5;
+                     // color c1 = color{0.5, 0.7, 1.0};
+                     // color c2 = color{1.0,1.0,1.0};
+                     ray r{lookFrom,direction};
+
                     interval delta{0.001,infinity};
                     hitRecord rec;
                     color c = realTimeRayColor(r,world,5);
@@ -167,11 +182,16 @@ public:
         }
 
     }
+    vec3 defocusDiskSample() const {
+        auto p = randomPointOnDisk();
+        return p.x() * defocusDiskU + p.y()  * defocusDiskV + lookFrom;
+    }
     ray rayAround(int i, int j) const {
         vec3 square = sample_square();
         //vec3 randomSubPixel = pixel00Loc + square + deltaU * (double(j) + 0.5) + deltaV * (double(i) + 0.5);
         vec3 randomSubPixel = pixel00Loc + (j + square.x()) * deltaU + (i + square.y()) * deltaV;
-        vec3 direction = randomSubPixel - lookFrom;
+        vec3 from = defocusAngle <= 0 ? lookFrom : defocusDiskSample();
+        vec3 direction = randomSubPixel - from;
         ray r{lookFrom,direction};
         return r;
     }
@@ -179,7 +199,7 @@ public:
         color c{};
         for (int s = 0; s < raySamples; s++) {
             ray r = rayAround(i,j);
-            c += realTimeRayColor(r,world,100);
+            c += realTimeRayColor(r,world,30);
         }
         //linear average
         return c/raySamples;
@@ -187,9 +207,15 @@ public:
     int getImageWidth() const {return imageWidth;};
     int getImageHeight() const {return imageHeight;};
 private:
+
     int imageWidth, imageHeight;
     double aspectRatio;
+
     double focalLength;
+    double focusDistance = 3.4;
+    double defocusAngle = 0;
+
+
     double viewPortHeight;
     double viewPortWidth;
     vec3 viewPortU;
@@ -206,6 +232,9 @@ private:
     vec3 u;
     vec3 v;
     vec3 w;
+
+    vec3 defocusDiskU;
+    vec3 defocusDiskV;
 
 
 };

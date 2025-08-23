@@ -41,6 +41,12 @@ vec3 random_vector() {
 vec3 random_vector(double min, double max) {
     return vec3{random_double(min,max),random_double(min,max),random_double(min,max)};
 }
+vec3 randomPointOnDisk() {
+    auto angle = random_double(0,2*M_PI);
+    vec3 pointOnCEdge = vec3(cos(angle),sin(angle),0);
+    auto r = sqrt(random_double());
+    return pointOnCEdge * r;
+}
 vec3 randomUnitDir() {
     while (true) {
         //first we create a random vector
@@ -55,7 +61,7 @@ vec3 randomUnitDir() {
     }
 }
 //Returns a normalized direction inside the
-vec3 vectorInsideEmisphere(vec3& normal) {
+vec3 vectorInsideEmisphere(const vec3& normal) {
     //!!!!!! Normal has to be passed normalized
     vec3 v = randomUnitDir();
     if (dot(v,normal) >= 0.0) {

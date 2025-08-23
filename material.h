@@ -15,7 +15,7 @@
 
 class material {
     public:
-    ~material() = default;
+    virtual ~material() = default;
     material() = default;
     virtual bool scatter(const ray& r, const hitRecord& rec, color& attenuation, ray& scattered) const {
         return false;
@@ -47,19 +47,12 @@ public:
 
     bool scatter(const ray &r, const hitRecord &rec, color &attenuation, ray &scattered) const override {
         vec3 unitV = unit_vector(r.direction);
-        auto scale = dot(unitV,rec.normal);
-        vec3 reflected = unitV -2 * scale * rec.normal;
-        vec3 fuzzyReflected = unit_vector(reflected) + randomUnitDir() * fuzzy;
-
-        // if (isFuzzy) {
-        //     vec3 fuzzyReflected = unit_vector(reflected) + randomUnitDir() * 0.3;
-        //     if (!fuzzyReflected.near_zero()) {
-        //         reflected = fuzzyReflected;
-        //     }
-        // }
+        vec3 reflected = reflect(unitV, rec.normal);
+        vec3 fuzzyReflected = unit_vector(reflected) + (vectorInsideEmisphere(rec.normal) * fuzzy);
+        fuzzyReflected = unit_vector(fuzzyReflected);
         scattered = ray{rec.hitPosition, fuzzyReflected};
         attenuation = albedo;
-        return (dot((fuzzyReflected), rec.normal) > 0);
+        return (dot( rec.normal,(fuzzyReflected)) > 0.0);
     }
     void setFuzzy(double fuz) {
         fuzzy = fuz;
@@ -71,6 +64,8 @@ class dielectric : public material {
     color albedo;
     double refractIndex;
     dielectric(color&& albedo,double refIndex) : albedo(albedo), refractIndex(refIndex) {
+    }
+    dielectric(double refIndex) : albedo(color{1,1,1}), refractIndex(refIndex) {
     }
     dielectric(color& albedo,double refIndex) : albedo(albedo), refractIndex(refIndex) {
     }
