@@ -8,7 +8,7 @@ The project requires that you have SDL2 installed on your machine. SDL2 it's usu
 ## How to compile
 Download the repo and cd into it, launch g++ main.cpp -I/usr/local/include/SDL2 -L/usr/local/lib -lSDL2 -o raytracer
 
-![image(2)](https://github.com/user-attachments/assets/346249de-21ad-4230-b056-bce3d6769822)
+<img width="800" height="800" alt="image1110" src="https://github.com/user-attachments/assets/d62ffca2-0283-43c3-9e11-dd6ba665752c" />
 
 
 
