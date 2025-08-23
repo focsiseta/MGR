@@ -16,6 +16,8 @@ Download the repo and cd into it, launch g++ main.cpp -I/usr/local/include/SDL2 
 
 
 
-To output the image you just ./raytracer >> image.ppm, and if you've compiled with the last the lines of code uncommented in main.cpp, then the last frame is the one that's going to be rendered. For obvious reasons the generated image will be way better than the realtime feed
+To output the image you just ./raytracer >> image.ppm, if you've compiled with the last the 2 lines of code uncommented in main.cpp, then the last frame shown before closing the SDL2 window is the one that's going to be rendered. For obvious reasons the generated image will be way better than the realtime feed
+
+As of now pressing w while in realtime adds 0.1 to the defocus angle of the camera
 
 ## There is still a long way to go
