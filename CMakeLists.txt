@@ -6,11 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Tell CMake where to find SDL2 manually
 # (This matches your -I and -L flags in g++)
-include_directories(/usr/local/include/SDL2 /usr/X11R6/include)
-link_directories(/usr/local/lib)
+include_directories(/usr/include/)
+link_directories(/usr/lib64)
 
 # Add executable
-add_executable(raytracingGLM
+add_executable(MGR
         main.cpp
         vec3.h
         color.h
@@ -21,9 +21,8 @@ add_executable(raytracingGLM
         interval.h
         camera.h
         material.h
-        realtimeRender.h
         rayUtilities.h
 )
 
 # Link SDL2
-target_link_libraries(raytracingGLM SDL2)
+target_link_libraries(MGR SDL2)
