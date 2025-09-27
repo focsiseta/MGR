@@ -7,7 +7,7 @@ In the meantime, I'll continue expanding on this with the other 2 books in the s
 ## Requirements
 The project requires that you have SDL2 installed on your machine. SDL2 it's usually available from your package manager as something like libsdl2-dev
 ## How to compile
-Download the repo and cd into it, launch g++ main.cpp -I/usr/local/include/SDL2 -L/usr/local/lib -lSDL2 -o raytracer
+Download the repo and cd into it, launch g++ main.cpp -lSDL2 -o raytracer
 
 ## Defocus blur working as intended
 
