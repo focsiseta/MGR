@@ -21,7 +21,10 @@ add_executable(MGR
         interval.h
         camera.h
         material.h
+        aabb.h
+        BVH.h
         rayUtilities.h
+
 )
 
 # Link SDL2

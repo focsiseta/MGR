@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 #include <random>
+#include "vec3.h"
 
 
 // C++ Std Usings
@@ -78,8 +79,5 @@ static double reflectance(double cosine, double refractionIndex) {
 
 
 // Common Headers
-
-#include "color.h"
-#include "vec3.h"
 
 #endif

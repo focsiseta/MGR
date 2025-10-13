@@ -3,13 +3,10 @@
 #define RGBA(r, g, b, a)	((r) << 24 | (g) << 16 | (b) << 8 | (a))
 
 
-#include "vec3.h"
 
 #include <iostream>
 #include <SDL2/SDL.h>
-
 #include "interval.h"
-
 using color = vec3;
 
 
@@ -96,10 +93,10 @@ public:
         }
         void setPixel(int x, int y, color& c) const{
             uint32_t cc = colorConversion(c);
-            renderbuffer.get()[y * width - 1 + x] = cc;
+            renderbuffer.get()[y * width + x] = cc;
         }
         uint32_t getPixel(int x, int y) const {
-            return renderbuffer.get()[y * width - 1 + x];
+            return renderbuffer.get()[y * width + x];
         }
         void update() {
         auto rawDick = renderbuffer.get();

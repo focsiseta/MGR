@@ -1,5 +1,5 @@
 ## Most Generic Raytracer
-It's basically raytracing in one weekend (https://raytracing.github.io/books/RayTracingInOneWeekend.html), but I added the possibility to render in "Realtime" the CPU-Generated buffer. Some funtions are a little different from the source material because I wanted to experiment a bit
+It's basically raytracing in one weekend (https://raytracing.github.io/books/RayTracingInOneWeekend.html), but I added the possibility to render in "Realtime" the CPU-Generated buffer. Some functions are a little different from the source material because I wanted to experiment a bit
 
 ## Things to do
 Framerate it's trash, speeding up with multithreading will come in the future as well as a GPGPU implementation.

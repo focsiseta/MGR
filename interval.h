@@ -6,10 +6,15 @@
 #define INTERVAL_H
 #include "utilities.h"
 
+
 class interval {
     public:
     double max,min;
     interval() : max{-infinity}, min{infinity} {}
+    interval(const interval& box1, const interval& box2) {
+        min = box1.min < box2.min ? box1.min : box2.min;
+        max = box1.max > box2.max ? box1.max : box2.max;
+    }
     interval(double min, double max) : min{min}, max{max} {}
     bool surrounds(const double x) const{
         return min < x && max > x;
@@ -21,6 +26,10 @@ class interval {
         if (x < min) return min;
         if (x > max) return max;
         return x;
+    }
+    interval expand(int delta) {
+        int pad = delta * 0.5;
+        return interval(min - pad, max + pad);
     }
 };
 

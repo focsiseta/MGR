@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "aabb.h"
 #include "interval.h"
 #include "ray.h"
 
@@ -46,21 +47,27 @@ public:
 class hittable {
 public:
     virtual ~hittable() = default; //default ci dice che ricade sulla implementazione di default generata dal compilatore
-    //=0 sta per che non esiste nessuna implementazione di default ed è completamente virtuale
+    //=0 sta per "non esiste nessuna implementazione di default ed è completamente virtuale"
     //const è una promessa verso il fatto che non modifichiamo l'oggetto
     virtual bool hit(ray& r, const interval& deltaT, hitRecord& record) const = 0;
+    virtual AABB buildAABB() const = 0;
+    virtual AABB getAABB() const = 0;
 
 };
 
 class hittableList : public hittable {
-private:
-    vector<shared_ptr<hittable>> objects;
     public:
+    vector<shared_ptr<hittable>> objects;
+    AABB bound;
     hittableList(vector<shared_ptr<hittable>> objects) : objects(objects) {}
     hittableList() {}
     void add(shared_ptr<hittable> object) {
         objects.push_back(object);
+        bound = AABB(bound,object->buildAABB());
+
     }
+    AABB buildAABB() const override { return bound; }
+    AABB getAABB() const override {return bound;}
     void clear() {
         objects.clear();
     }
@@ -102,9 +109,12 @@ private:
 class sphere : public hittable {
     public:
     vec3 center;
+    AABB bound;
     double radius;
     //sphere(vec3 center, double radius) : center(center), radius(radius) {}
-    sphere(vec3 center, double radius,shared_ptr<material> matt) : center(center) ,radius(radius), mat(matt) {}
+    sphere(vec3 center, double radius,shared_ptr<material> matt) : center(center) ,radius(radius), mat(matt) {
+        bound = buildAABB();
+    }
     bool hit(ray &r, const interval& deltaT, hitRecord &record) const override {
         const auto C_Q = (center - r.Origin());
         auto a = r.Direction().length_squared();
@@ -131,6 +141,15 @@ class sphere : public hittable {
     }
     shared_ptr<material> getMaterial() const {
         return mat;
+    }
+    AABB buildAABB() const override {
+        vec3 boxEdge = vec3(radius,radius,radius);
+        vec3 farEdge = center + boxEdge;
+        vec3 nearEdge = center - boxEdge;
+        return AABB{nearEdge,farEdge};
+    }
+    AABB getAABB() const override {
+        return bound;
     }
     ~sphere() override = default;
 private:
